@@ -44,7 +44,6 @@ class MT4_Trade(Base):
 def _get_account_details_():
     wks = _connect_to_google_drive_()
     account_details = DataFrame(wks.get_all_records())
-    #account_details = pd.read_csv('20180207 AccountDetailsCurrent.csv')
     print(account_details)
     return account_details
 
@@ -125,6 +124,7 @@ def _update_new_logins_(df_mt4_logins, account_details_copy):
 def _process_all_info_(df_all_info, have_new_login):
     if have_new_login == True:
         df_all_info = df_all_info[df_all_info['exchangeRate'] != '']
+    df_all_info['exchangeRate'] = df_all_info['exchangeRate'].astype('float')
     df_all_info['equity'] = (df_all_info['balance'] + df_all_info['credit'] +
                              df_all_info['profit']) * df_all_info['exchangeRate'] * df_all_info['leverage']
     now = datetime.datetime.now()
@@ -188,9 +188,8 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    schedule.every(2).hours.do(main)
-    #main()
-
+    schedule.every(1).hours.do(main)
+    # main()
 
 while True:
     schedule.run_pending()
