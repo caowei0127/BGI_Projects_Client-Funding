@@ -1,26 +1,26 @@
-import pandas as pd
 import sys
-from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, ForeignKey, Float
-from sqlalchemy.orm import sessionmaker
-from pandas import DataFrame
+import json
+import time
+import smtplib
+import datetime
+import requests
+import schedule
+import pygsheets
 import numpy as np
+import pandas as pd
+from pandas import DataFrame
+from sqlalchemy.sql import func
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, FLOAT, DateTime
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from sqlalchemy.sql import func
-import datetime
-import smtplib
-import requests
-import json
-import schedule
-import time
-import pygsheets
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, ForeignKey, Float
 
 
 Base = declarative_base()
 
 not_check_groups = ['A_ATG_R']
+mc_lp = {10: 'LMAX', 11: 'Divisa', 22: 'Vantage', 34: 'CMC'}
 
 
 class MT4_User(Base):
@@ -44,6 +44,7 @@ class MT4_Trade(Base):
 def _get_account_details_():
     wks = _connect_to_google_drive_()
     account_details = DataFrame(wks.get_all_records())
+    account_details = account_details[account_details['exchangeRate'] != '']
     print(account_details)
     return account_details
 
@@ -161,7 +162,6 @@ def _get_access_token_():
 
 
 def _get_lp_funding_(access_token):
-    mc_lp = {10: 'LMAX', 11: 'Divisa', 22: 'Vantage'}
     lp_funding = 0.0
     for margin_account_number in mc_lp.keys():
         url_lp_funding = 'https://38.76.4.235:44300/api/rest/margin-account/' + \
@@ -189,7 +189,7 @@ def main(argv=None):
 
 if __name__ == "__main__":
     schedule.every(1).hours.do(main)
-    # main()
+    #main()
 
 while True:
     schedule.run_pending()
